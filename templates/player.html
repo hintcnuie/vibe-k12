@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>vibe-k12 player</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="stage"></div>
+<script src="timeline.js"></script>
+<script src="scenes.js"></script>
+<script>
+(function () {
+  const tl = window.__TIMELINE__;
+  if (!tl) throw new Error('缺少 timeline.js');
+  const stage = document.getElementById('stage');
+
+  const built = tl.scenes.map(s => {
+    const tpl = window.SCENES[s.template];
+    if (!tpl) throw new Error('未知模板: ' + s.template);
+    const node = tpl(s.props || {});
+    const sec = document.createElement('section');
+    sec.className = 'scene';
+    sec.appendChild(node.el);
+    stage.appendChild(sec);
+    return { sec, node, s };
+  });
+
+  const sub = document.createElement('div');
+  sub.className = 'subtitle';
+  document.body.appendChild(sub);
+
+  const total = tl.total;
+  window.__TOTAL__ = total;
+
+  window.renderFrame = function (t) {
+    if (t < 0) t = 0;
+    if (t > total) t = total;
+    for (let i = 0; i < built.length; i++) {
+      const b = built[i];
+      const s = b.s;
+      const visible = t >= s.start && t < s.start + s.dur;
+      b.sec.style.display = visible ? 'block' : 'none';
+      if (!visible) continue;
+      const local = t - s.start;
+      b.node.update(local, s.dur);
+      if (tl.meta.subtitles !== false && s.narration) {
+        const a = Math.min(1, local / 0.5);
+        const o = Math.min(1, Math.max(0, (s.dur - local) / 0.35));
+        sub.textContent = s.narration;
+        sub.style.opacity = (a * o * 0.88).toFixed(3);
+      } else {
+        sub.style.opacity = '0';
+      }
+    }
+  };
+
+  window.renderFrame(0);
+  window.__READY__ = true;
+})();
+</script>
+</body>
+</html>

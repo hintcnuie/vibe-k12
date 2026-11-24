@@ -1,0 +1,17 @@
+# 产物与本地环境
+out/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.log
+
+# 音频中间文件（体积大且可随时重生成）
+*.wav
+*.mp3
+*.aiff
+
+# 渲染帧
+frames/
+f_*.png
