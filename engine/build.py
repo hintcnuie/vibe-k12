@@ -135,7 +135,7 @@ def main():
     (out / "timeline.js").write_text(
         "window.__TIMELINE__ = " + json.dumps(tl, ensure_ascii=False) + ";\n",
         encoding="utf-8")
-    for f in ("player.html", "style.css", "scenes.js"):
+    for f in ("player.html", "style.css", "scenes.js", "icons.js"):
         shutil.copy2(ROOT / "templates" / f, out / f)
     print(f"■ 时间轴：{total:.2f}s（{int(round(total * fps))} 帧）")
 

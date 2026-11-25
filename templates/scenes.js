@@ -346,8 +346,8 @@
         <div class="tb-title">${p_.title || ''}</div>
         <div class="tb-grid" style="grid-template-columns:repeat(${cols.length},1fr)">
           ${cols.map(c => `<div class="tb-cell tb-head">${c}</div>`).join('')}
-          ${rows.map((r, i) => r.cells.map(c =>
-            `<div class="tb-cell tb-body" data-row="${i}">${c}</div>`).join('')).join('')}
+          ${rows.map((r, i) => r.cells.map((c, j) =>
+            `<div class="tb-cell tb-body" data-row="${i}">${j === 0 && r.icon && window.ICONS[r.icon] ? `<i class="tb-ico">${window.ICONS[r.icon]}</i>` : ''}${c}</div>`).join('')).join('')}
         </div>
         <div class="tb-note">${p_.note || ''}</div>`);
       const title = el.querySelector('.tb-title'), note = el.querySelector('.tb-note');
@@ -531,6 +531,67 @@
     },
 
     /* 15 相遇演示：两人从两头同时出发，相向而行，合走总路程（竖版 1080×1440） */
+    /* 14b 竞走演示：三个动物在各自的跑道上按各自速度跑，一路读出米数和速度 */
+    race(p_) {
+      const L = p_.len || 280, tMax = p_.tMax || 4;
+      const X0 = 300, X1 = 944, SPAN = X1 - X0;
+      const lanes = p_.lanes || [];
+      const TOP = [470, 720, 970];
+      const el = mk('div', 'race', `
+        <div class="rc-title">${p_.title || ''}</div>
+        <div class="rc-clock"><span class="ck-n ck">0.0</span><span>&nbsp;分</span></div>
+        <div class="rc-ruler">
+          ${[0, 70, 140, 210, 280].map(v => `<span class="tk" style="left:${(v / L) * SPAN}px">${v}</span>`).join('')}
+          <span class="ru">米</span>
+        </div>
+        ${lanes.map((ln, i) => `
+          <div class="rc-lane" style="top:${TOP[i]}px;--lc:${ln.color || 'var(--ink)'}">
+            <div class="rc-tag">
+              <div class="rc-ico">${window.ICONS[ln.icon] || ''}</div>
+              <div class="rc-name">${ln.name || ''}</div>
+            </div>
+            <div class="rc-track">
+              <span class="rc-dot s"></span><span class="rc-dot e"></span>
+            </div>
+            <div class="rc-actor"><span class="rc-now"></span>${window.ICONS[ln.icon] || ''}</div>
+            <div class="rc-out">${ln.t} 分 ${ln.d} 米　→　每分 ${Math.round(ln.d / ln.t)} 米</div>
+          </div>`).join('')}
+        <div class="rc-note">${p_.note || ''}</div>`);
+      const title = el.querySelector('.rc-title');
+      const ck = el.querySelector('.ck');
+      const note = el.querySelector('.rc-note');
+      const rows = lanes.map((ln, i) => {
+        const lane = el.querySelectorAll('.rc-lane')[i];
+        return {
+          v: ln.d / ln.t, d: ln.d, t: ln.t,
+          actor: lane.querySelector('.rc-actor'),
+          now: lane.querySelector('.rc-now'),
+          out: lane.querySelector('.rc-out'),
+        };
+      });
+      return {
+        el, update(l, D) {
+          title.style.opacity = eo(l, 0, .6).toFixed(3);
+          /* 时间推进：0 → tMax 分 */
+          const span = Math.max(3.2, (D || 12) - 2.6);
+          const pr = p(l, .55, span);
+          const t = tMax * pr;
+          ck.textContent = t.toFixed(1);
+          rows.forEach(r => {
+            const moved = Math.min(r.v * t, r.d);
+            const x = (moved / L) * SPAN;
+            r.actor.style.transform = `translateX(${(X0 + x - 36).toFixed(1)}px)`;
+            /* 小人头顶实时米数：把"走了多远"直接写在运动上 */
+            r.now.textContent = Math.round(moved) + ' 米';
+            r.now.style.opacity = eo(l, .55, .4).toFixed(3);
+            const done = t >= r.t - 1e-6;
+            r.out.style.opacity = done ? eo(l, .55 + span * (r.t / tMax) - .2, .5).toFixed(3) : 0;
+          });
+          note.style.opacity = eo(l, 2.9, .7).toFixed(3);
+        }
+      };
+    },
+
     meet(p_) {
       const L = p_.len || 500, v1 = p_.v1 || 60, v2 = p_.v2 || 40;
       const tMax = p_.tMax || Math.round(L / (v1 + v2) * 10) / 10;

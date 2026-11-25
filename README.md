@@ -39,6 +39,7 @@ vibe-k12/
 │   └── snap.py         # 任意时间点截图，用来快速查版式
 ├── templates/
 │   ├── player.html     # 播放器：把时间轴变成 DOM
+│   ├── icons.js        # 简笔画图标库（动物/人/飞机/声音/光/车，单色线稿）
 │   ├── style.css       # 视觉系统：色板/字体/版式
 │   └── scenes.js       # 场景模板库
 ├── out/<id>/           # 产物：mp4、mix.wav、frames、timeline.json、sheet.jpg
@@ -57,7 +58,7 @@ vibe-k12/
 | `out/lidong/lidong.mp4` | 立冬（二十四节气） | 78.6s | `content/lidong.json` |
 | `out/lucheng/lucheng.mp4` | 路程·时间·速度（四上数学） | 167.3s | `content/lucheng.json` |
 | `out/xiangyu/xiangyu.mp4` | 相遇问题（超出课本，仅作练习；竖版 3:4 · 童趣主题） | 68.9s | `content/xiangyu.json` |
-| `out/sudu/sudu.mp4` | 路程·时间·速度（人教版四上 P79–P80 · 竖版 3:4 · 童趣主题） | 86.7s | `content/sudu.json` |
+| `out/sudu/sudu.mp4` | 路程·时间·速度（人教版四上 P79–P80 · 竖版 3:4 · 童趣主题 · 含竞走演示） | 89.3s | `content/sudu.json` |
 
 ## 跑一条片子
 
@@ -124,10 +125,11 @@ cd vibe-k12
 | `timeline` | 横轴四节点，可高亮 | `points[]` `active` `badge` `fact` |
 | `ritual` | 左标题 + 右三步流程 | `title` `steps[{n,t}]` |
 | `food` | 圆角卡片（3~4 张），图标 + 名称 + 说明 | `title` `items[{e,n,d}]` `note` |
-| `table` | 成绩表：表头 + 数据行，可高亮 | `title` `cols[]` `rows[{cells[],hl}]` `note` |
+| `table` | 成绩表：表头 + 数据行，可高亮；`rows[].icon` 给首列挂简笔画 | `title` `cols[]` `rows[{cells[],hl,icon}]` `note` |
 | `formula` | 三词公式，逐块落下，每项带释义 | `a` `b` `c` `op` `ca` `cb` `cc` `note` |
 | `motion` | 路面 + 小车匀速行驶 + 时间/路程/速度实时读数 | `v` `path` `tMax` `unitT` `unitD` `title` `note` |
 | `ratio` | 关系三角：路程在顶，速度×时间在下，三个变形公式 | `top` `left` `right` `formulas[]` `note` |
+| `race` | 竞走演示（竖版专用）：三条跑道 + 顶部 0–280 米距离尺 + 小人头顶实时米数 | `title` `len` `tMax` `lanes[{icon,name,t,d,color}]` `note` |
 | `meet` | 相遇演示（竖版专用）：两人相向匀速前进 + 合走进度条 + 相遇闪光 | `title` `len` `v1` `v2` `n1` `n2` `sumText` |
 | `card` | 结尾知识卡（定格收藏）：序号条目 + 脚注 | `title` `items[]` `foot` |
 | `outro` | 结尾三行 + 落款印章 | `lines[]` `tag` |
@@ -152,6 +154,24 @@ cd vibe-k12
 童趣主题色板（`theme-kids`）：天空蓝底 `#EDF7FF` + 四角暖黄/薄荷/天蓝/珊瑚色光斑 + 圆点网格；
 墨色 `#123A5A`、珊瑚 `#FF5B5B`、薄荷 `#16C79A`、天蓝 `#2E8BF0`、暖黄 `#FFC53D`。
 原来的土黄纸感（`paper`）只留给节气/古诗类，K12 数学、儿童向内容一律用 `kids`。
+
+## 直观性原则（写内容的第一条，优先于文采）
+
+K12 片子最常见的败笔是"文字很多、图形很少"：念起来都对，孩子记不住。
+写任何一期内容前，先按下面六条自检：
+
+1. **名词即图形**。出现动物、车、飞机、声音、光这类可以画出来的名词，名字旁边必须有简笔画，不能只有字。
+   图标统一放 `templates/icons.js`（100×100 视口、stroke 3.2、`currentColor` 上色，外部 CSS 决定颜色）。
+2. **关系即运动**。只要讲"路程 / 时间 / 速度 / 快慢"这类量，就必须让物体**在一条表示路程的线（跑道、公路上）上真的走一遍**，
+   数字跟着位置变，而不是只写公式。参考 `race` 模板：三条跑道 + 顶部距离尺 + 小人头顶实时米数。
+3. **图形先于文字**。一屏先让画面动起来，字幕、脚注只做解释；主要信息不超过 3 行。
+4. **一屏两个焦点上限**。一个运动主体群 + 一块读数；再多就拆屏，宁可多一屏也不要挤。
+5. **风格统一**。线稿图标，不用 emoji 当主体、不用照片；同一屏的图标粗细与颜色数量一致（<=2 个强调色）。
+6. **手机尺寸自检**。把画面缩到 360px 宽看：如果只看图形说不出这一屏在讲什么，这一屏就不合格。
+
+配套写法：
+- 表格类场景直接在 `content/*.json` 里写 `rows[].icon = "rabbit" / "squirrel" / "monkey" / "walker" / "plane" / "sound" / "light" / "van" / "car" / "clock"`，首列会自动挂图。
+- 运动类场景用 `race`（多主体同场竞赛）或 `motion` / `meet`（单主体沿路移动）；时间一律随时间线性推进，别用缓入缓出，否则"匀速"会被画成变速。
 
 ## 视觉设计规范（本机实测结论）
 
