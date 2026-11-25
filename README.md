@@ -52,6 +52,7 @@ vibe-k12/
 |---|---|---|---|
 | `out/lidong/lidong.mp4` | 立冬（二十四节气） | 78.6s | `content/lidong.json` |
 | `out/lucheng/lucheng.mp4` | 路程·时间·速度（四上数学） | 167.3s | `content/lucheng.json` |
+| `out/xiangyu/xiangyu.mp4` | 相遇问题（四上数学 · 竖版 3:4 · 童趣主题） | 68.9s | `content/xiangyu.json` |
 
 ## 跑一条片子
 
@@ -122,11 +123,30 @@ cd vibe-k12
 | `formula` | 三词公式，逐块落下，每项带释义 | `a` `b` `c` `op` `ca` `cb` `cc` `note` |
 | `motion` | 路面 + 小车匀速行驶 + 时间/路程/速度实时读数 | `v` `path` `tMax` `unitT` `unitD` `title` `note` |
 | `ratio` | 关系三角：路程在顶，速度×时间在下，三个变形公式 | `top` `left` `right` `formulas[]` `note` |
+| `meet` | 相遇演示（竖版专用）：两人相向匀速前进 + 合走进度条 + 相遇闪光 | `title` `len` `v1` `v2` `n1` `n2` `sumText` |
+| `card` | 结尾知识卡（定格收藏）：序号条目 + 脚注 | `title` `items[]` `foot` |
 | `outro` | 结尾三行 + 落款印章 | `lines[]` `tag` |
 
 要加新模板：在 `templates/scenes.js` 里加一个函数，返回 `{el, update(local,dur)}`，
 并在 `style.css` 加样式。**update 必须是纯函数**——给定时间 t 画面状态唯一确定，
 否则就不能任意跳帧、不能断点续渲。
+
+## 竖版（小红书 3:4）与童趣主题
+
+一条片子要出竖版，**只改 `meta`，不动模板**：
+
+```json
+"meta": { "theme": "kids", "width": 1080, "height": 1440 }
+```
+
+- `player.html` 读 `meta`：`theme` → `body.theme-kids`（亮色板），`height > width` → `body.portrait`。
+- 所有竖版差异都写在 `style.css` 末尾的 `body.portrait ...` 覆盖里：字号放大、`compare` 改竖排两卡、`formula` 改上下两行、`ratio` 放大画布，横版数值一律不动。
+- **坑**：`scenes.js` 在 player 注入 class 之前就已执行，模板里判断方向必须用 `isPortrait()`（调用时再读 class），不能在模块顶层存常量。
+- 模板硬编码 1920×1080 坐标系的（`motion`、`meet`）在 1080 宽画幅下会溢出；`meet` 已按 1080×1440 重写，`motion` 目前仍是横版专用。
+
+童趣主题色板（`theme-kids`）：天空蓝底 `#EDF7FF` + 四角暖黄/薄荷/天蓝/珊瑚色光斑 + 圆点网格；
+墨色 `#123A5A`、珊瑚 `#FF5B5B`、薄荷 `#16C79A`、天蓝 `#2E8BF0`、暖黄 `#FFC53D`。
+原来的土黄纸感（`paper`）只留给节气/古诗类，K12 数学、儿童向内容一律用 `kids`。
 
 ## 视觉设计规范（本机实测结论）
 

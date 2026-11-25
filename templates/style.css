@@ -306,3 +306,157 @@ body{ -webkit-font-smoothing:antialiased; }
   font-size:28px;line-height:1.55;color:var(--ink-2);
   letter-spacing:.06em;opacity:0;will-change:opacity;
   text-shadow:0 1px 0 rgba(255,255,255,.6);}
+
+/* ============================================================
+   童趣主题（面向小学生的亮色板）
+   —— meta.theme = "kids" 时由 player.html 打到 body 上
+   底色：晴朗天空蓝 + 暖阳黄斑 + 薄荷绿，不再用纸感土黄
+   ============================================================ */
+body.theme-kids{
+  --paper:#EDF7FF;
+  --paper-2:#DFF0FF;
+  --ink:#123A5A;
+  --ink-2:#2E5C7E;
+  --mute:#7FA0BC;
+  --red:#FF5B5B;
+  --teal:#16C79A;
+  --blue:#2E8BF0;
+  --yellow:#FFC53D;
+  --line:rgba(18,58,90,.13);
+}
+body.theme-kids #stage{
+  background:
+    radial-gradient(260px 260px at 5% 3%, rgba(255,197,61,.55) 0%, rgba(255,197,61,0) 70%),
+    radial-gradient(340px 340px at 99% 14%, rgba(22,199,154,.42) 0%, rgba(22,199,154,0) 72%),
+    radial-gradient(360px 360px at -2% 97%, rgba(46,139,240,.32) 0%, rgba(46,139,240,0) 72%),
+    radial-gradient(300px 300px at 98% 94%, rgba(255,91,91,.26) 0%, rgba(255,91,91,0) 72%),
+    linear-gradient(180deg,#F2FBFF 0%,#DDF0FF 42%,#D5F7EB 100%);
+}
+/* 圆点网格：把纸纹换成蜂窝感圆点，弱到只当纹理 */
+body.theme-kids #stage::after{
+  background-image:radial-gradient(rgba(18,58,90,.06) 2.6px, transparent 3px);
+  background-size:76px 76px;
+  mix-blend-mode:normal;
+  opacity:1;
+}
+body.theme-kids .cv-seal{border-color:var(--teal);color:var(--teal);}
+body.theme-kids .cv-rule{background:linear-gradient(90deg,var(--yellow),var(--red),var(--teal));opacity:.55;height:3px;}
+body.theme-kids .card-box{background:#fff;border-color:var(--blue);box-shadow:0 18px 40px rgba(18,58,90,.10);}
+body.theme-kids .meet-tile{background:rgba(255,255,255,.78);border-color:rgba(18,58,90,.10);}
+body.theme-kids .meet-tile.hi{background:#FFF0EE;}
+body.theme-kids .cmp-col{background:#FFF6F5;border:2px solid rgba(255,91,91,.42);
+  border-radius:26px;padding:34px 32px;box-shadow:0 12px 28px rgba(18,58,90,.07);}
+body.theme-kids .cmp-col:last-of-type{background:#F2FFFB;border-color:rgba(22,199,154,.55);}
+body.theme-kids .cmp-col:first-of-type .cmp-t{color:#D8413C;}
+body.theme-kids .cmp-col:last-of-type .cmp-t{color:#0E9C79;}
+
+/* ============================================================
+   竖版（3:4）：宽只有 1080，全部按短边重排 —— 字号放大、容器改竖向
+   —— meta.height > meta.width 时自动生效
+   ============================================================ */
+body.portrait .cv-kicker{font-size:22px;letter-spacing:.34em;margin-bottom:36px;}
+body.portrait .cv-title{font-size:178px;letter-spacing:.06em;}
+body.portrait .cv-rule{width:0;margin:54px 0 42px;height:3px;}
+body.portrait .cv-sub{font-size:31px;letter-spacing:.18em;}
+body.portrait .cv-seal{right:9%;top:22%;font-size:30px;padding:20px 10px;}
+body.portrait .cv-corner{font-size:21px;left:8%;bottom:10%;}
+
+/* 对比：竖排两张卡，把纵向用满 */
+body.portrait .cmp{flex-direction:column;align-items:stretch;justify-content:center;
+  padding:0 84px;gap:34px;}
+body.portrait .cmp-col{flex:none;}
+body.portrait .cmp-div{display:none;}
+body.portrait .cmp-t{font-size:23px;letter-spacing:.2em;margin-bottom:22px;}
+body.portrait .cmp-list li{font-size:44px;margin:16px 0;gap:16px;}
+
+/* 公式：竖版改为上下两行，横排会挤成方块 */
+body.portrait .fm-vbox{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;}
+body.portrait .fm-v1{font-family:var(--serif);font-size:104px;color:var(--red);
+  letter-spacing:.04em;line-height:1.1;}
+body.portrait .fm-v1c{display:block;font-family:var(--sans);font-size:22px;
+  color:var(--mute);letter-spacing:.16em;text-align:center;margin-top:16px;}
+body.portrait .fm-v2{display:flex;align-items:flex-start;justify-content:center;
+  gap:22px;margin-top:44px;}
+body.portrait .fm-vop{font-family:var(--serif);font-size:68px;color:var(--ink-2);
+  line-height:1;margin-top:8px;}
+body.portrait .fm-vterm{display:flex;flex-direction:column;align-items:center;}
+body.portrait .fm-vterm span{font-family:var(--serif);font-size:78px;color:var(--ink);
+  line-height:1.15;}
+body.portrait .fm-vterm em{font-style:normal;font-family:var(--sans);font-size:20px;
+  color:var(--mute);letter-spacing:.10em;margin-top:12px;}
+body.portrait .fm-note{font-family:var(--sans);font-size:30px;color:var(--ink-2);
+  margin-top:64px;padding:14px 30px;border:1.5px solid var(--line);border-radius:14px;
+  background:rgba(255,255,255,.6);letter-spacing:.06em;}
+
+/* 关系三角：竖版放大画布，字不溢出圆 */
+body.portrait .ra-title{font-size:27px;letter-spacing:.30em;margin-bottom:24px;}
+body.portrait .ra-svg{width:960px;height:470px;}
+body.portrait .ra-node text{font-size:34px;}
+body.portrait .ra-x{font-size:44px;}
+body.portrait .ra-list{flex-direction:column;align-items:center;gap:14px;margin-top:30px;}
+body.portrait .ra-f{font-size:25px;padding:12px 24px;}
+body.portrait .ra-note{font-size:21px;margin-top:22px;}
+
+body.portrait .out-line{font-size:62px;}
+body.portrait .out-line.big{font-size:80px;}
+body.portrait .tb-grid{width:900px;}
+body.portrait .tb-title{font-size:34px;margin-bottom:28px;}
+body.portrait .tb-cell{font-size:30px;padding:16px 10px;}
+body.portrait .tb-head{font-size:20px;padding:13px;}
+body.portrait .tb-note{font-size:21px;margin-top:28px;}
+body.portrait .subtitle{max-width:920px;font-size:25px;bottom:44px;line-height:1.5;}
+
+/* ---------- 15 相遇演示（竖版专用，1080×1440 坐标系） ---------- */
+.meet{position:absolute;inset:0;}
+.meet-title{position:absolute;top:116px;left:0;right:0;text-align:center;
+  font-family:var(--serif);font-size:60px;color:var(--ink);letter-spacing:.04em;}
+.meet-read{position:absolute;top:212px;left:0;right:0;display:flex;
+  justify-content:center;gap:26px;}
+.meet-tile{width:250px;padding:16px 0 13px;text-align:center;
+  border:1.5px solid var(--line);border-radius:16px;background:rgba(255,255,255,.6);}
+.meet-tile.hi{border-color:var(--red);}
+.meet-k{font-family:var(--sans);font-size:18px;color:var(--mute);letter-spacing:.2em;}
+.meet-n{font-family:var(--serif);font-size:60px;color:var(--ink);line-height:1.14;}
+.meet-tile.hi .meet-n{color:var(--red);}
+.meet-u{font-family:var(--sans);font-size:16px;color:var(--mute);}
+
+/* 每分靠近=速度和：这是整题的关键一步，单独给一块位置 */
+.meet-rate{position:absolute;top:430px;left:0;right:0;display:flex;
+  align-items:baseline;justify-content:center;gap:14px;}
+.meet-rate .r1{font-family:var(--sans);font-size:26px;color:var(--ink-2);letter-spacing:.1em;}
+.meet-rate .r2{font-family:var(--serif);font-size:62px;color:var(--ink);letter-spacing:.04em;}
+.meet-rate .r2 b{color:var(--red);font-weight:600;}
+.meet-rate .r3{font-family:var(--sans);font-size:22px;color:var(--mute);}
+.meet-bar{position:absolute;top:552px;left:50%;transform:translateX(-50%);
+  width:720px;height:16px;border-radius:9px;background:rgba(18,58,90,.10);overflow:hidden;}
+.meet-bar i{display:block;height:100%;width:0;border-radius:9px;
+  background:linear-gradient(90deg,var(--blue),var(--teal));}
+.meet-bar-cap{position:absolute;top:584px;left:0;right:0;text-align:center;
+  font-family:var(--sans);font-size:19px;color:var(--mute);letter-spacing:.12em;}
+
+.meet-svg{position:absolute;left:0;top:0;width:1080px;height:1440px;}
+.mt-road{stroke:var(--ink);stroke-width:4;}
+.mt-cap{stroke:var(--ink);stroke-width:1.6;}
+.mt-txt{font-family:var(--sans);font-size:24px;fill:var(--ink-2);}
+.mt-txt.small{font-size:20px;fill:var(--mute);}
+.mt-name{font-family:var(--sans);font-size:26px;fill:var(--ink);text-anchor:middle;}
+.mt-spd{font-family:var(--sans);font-size:21px;text-anchor:middle;}
+.mt-mover circle{stroke-width:3.5;}
+.mt-flag{stroke:var(--red);stroke-width:2;stroke-dasharray:7 7;}
+.mt-flash{fill:none;stroke:var(--red);stroke-width:3.5;}
+.mt-meet-txt{font-family:var(--serif);font-size:40px;fill:var(--red);text-anchor:middle;}
+
+/* ---------- 16 知识卡（结尾定格，方便截图收藏） ---------- */
+.card{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.card-box{width:900px;border:3px solid var(--ink);border-radius:32px;
+  padding:62px 60px 52px;background:rgba(255,255,255,.72);}
+.card-title{font-family:var(--serif);font-size:56px;color:var(--ink);
+  letter-spacing:.06em;margin-bottom:44px;text-align:center;}
+.card-row{display:flex;align-items:center;gap:22px;margin:26px 0;}
+.card-n{width:52px;height:52px;flex:none;border-radius:50%;background:var(--red);
+  color:#fff;font-family:var(--sans);font-size:24px;display:flex;
+  align-items:center;justify-content:center;}
+.card-t{font-family:var(--serif);font-size:38px;color:var(--ink-2);line-height:1.42;}
+.card-foot{margin-top:38px;padding-top:28px;border-top:2px dashed var(--line);
+  font-family:var(--sans);font-size:23px;color:var(--mute);letter-spacing:.06em;text-align:center;}

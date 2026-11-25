@@ -15,6 +15,10 @@
   const eo = (l, s, d) => eOut(p(l, s, d));
   const ei = (l, s, d) => eInOut(p(l, s, d));
 
+  // 竖版：模板需要按 1080×1440 重排时用它分支
+  // 注意 scenes.js 在 player 注入 portrait class 之前就已求值，必须调用时再判断
+  const isPortrait = () => document.body.classList.contains('portrait');
+
   const mk = (tag, cls, html) => {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -367,6 +371,32 @@
 
     /* 12 公式：三个词 + 算子，逐块落下，每项带释义 */
     formula(p_) {
+      if (isPortrait()) {
+        const el = mk('div', 'fm', `
+          <div class="fm-vbox">
+            <div class="fm-v1 fm-term t0">${p_.a || ''}</div>
+            <div class="fm-v1c fm-cap k0">${p_.ca || ''}</div>
+            <div class="fm-v2">
+              <span class="fm-vop fm-op o0">=</span>
+              <span class="fm-vterm"><span class="fm-term t1">${p_.b || ''}</span><em class="fm-cap k1">${p_.cb || ''}</em></span>
+              <span class="fm-vop fm-op o1">${p_.op || '÷'}</span>
+              <span class="fm-vterm"><span class="fm-term t2">${p_.c || ''}</span><em class="fm-cap k2">${p_.cc || ''}</em></span>
+            </div>
+            <div class="fm-note">${p_.note || ''}</div>
+          </div>`);
+        const terms = [...el.querySelectorAll('.fm-term')];
+        const ops = [...el.querySelectorAll('.fm-op')];
+        const caps = [...el.querySelectorAll('.fm-cap')];
+        const note = el.querySelector('.fm-note');
+        return {
+          el, update(l) {
+            terms.forEach((n, i) => pop(n, eo(l, .2 + i * .42, .7), .88));
+            ops.forEach(n => { n.style.opacity = eo(l, .75, .5).toFixed(3); });
+            caps.forEach((n, i) => rise(n, eo(l, 1.4 + i * .26, .7), 14));
+            note.style.opacity = eo(l, 2.5, .8).toFixed(3);
+          }
+        };
+      }
       const el = mk('div', 'fm', `
         <div class="fm-grid">
           <span class="fm-term t0">${p_.a || ''}</span>
@@ -496,6 +526,111 @@
           cross.style.opacity = eo(l, 1.5, .5).toFixed(3);
           fs.forEach((n, i) => rise(n, eo(l, 1.75 + i * .35, .7), 18));
           note.style.opacity = eo(l, 2.9, .7).toFixed(3);
+        }
+      };
+    },
+
+    /* 15 相遇演示：两人从两头同时出发，相向而行，合走总路程（竖版 1080×1440） */
+    meet(p_) {
+      const L = p_.len || 500, v1 = p_.v1 || 60, v2 = p_.v2 || 40;
+      const tMax = p_.tMax || Math.round(L / (v1 + v2) * 10) / 10;
+      const X0 = 96, X1 = 984, Y = 800;
+      const px = m => X0 + (m / L) * (X1 - X0);
+      const meetX = px(L * v1 / (v1 + v2)).toFixed(1);
+      const el = mk('div', 'meet', `
+        <div class="meet-title">${p_.title || ''}</div>
+        <div class="meet-read">
+          <div class="meet-tile"><div class="meet-k">时间</div><div class="meet-n n-t">0.0</div><div class="meet-u">分</div></div>
+          <div class="meet-tile hi"><div class="meet-k">两人合走</div><div class="meet-n n-d">0</div><div class="meet-u">米</div></div>
+        </div>
+        <div class="meet-rate rate"><span class="r1">每分靠近</span><span class="r2">${v1} + ${v2} = <b>${v1 + v2}</b></span><span class="r3">米</span></div>
+        <div class="meet-bar"><i class="bar"></i></div>
+        <div class="meet-bar-cap barcap">两人一起，靠近得越来越多</div>
+        <svg class="meet-svg" viewBox="0 0 1080 1440">
+          <line class="mt-cap" x1="${X0}" y1="${Y - 104}" x2="${X1}" y2="${Y - 104}"/>
+          <text class="mt-txt small" x="540" y="${Y - 124}" text-anchor="middle">两地相距 ${L} 米</text>
+          <line class="mt-road" x1="${X0}" y1="${Y}" x2="${X1}" y2="${Y}"/>
+          <line class="mt-cap" x1="${X0}" y1="${Y - 18}" x2="${X0}" y2="${Y + 18}"/>
+          <line class="mt-cap" x1="${X1}" y1="${Y - 18}" x2="${X1}" y2="${Y + 18}"/>
+          <line class="mt-flag flag" x1="${meetX}" y1="${Y - 98}" x2="${meetX}" y2="${Y + 98}"/>
+          <g class="mt-mover mL" transform="translate(${X0},${Y})">
+            <circle r="28" fill="var(--blue)" stroke="#fff"/>
+            <text class="mt-name nm" y="-54" fill="var(--blue)">${p_.n1 || '小明'}</text>
+            <text class="mt-spd sp" y="60" fill="var(--blue)">每分 ${v1} 米</text>
+            <text x="0" y="9" text-anchor="middle" font-size="24" fill="#fff" font-family="var(--sans)">${p_.c1 || '明'}</text>
+          </g>
+          <g class="mt-mover mR" transform="translate(${X1},${Y})">
+            <circle r="28" fill="var(--red)" stroke="#fff"/>
+            <text class="mt-name nm" y="-54" fill="var(--red)">${p_.n2 || '小红'}</text>
+            <text class="mt-spd sp" y="60" fill="var(--red)">每分 ${v2} 米</text>
+            <text x="0" y="9" text-anchor="middle" font-size="24" fill="#fff" font-family="var(--sans)">${p_.c2 || '红'}</text>
+          </g>
+          <circle class="mt-flash flash" cx="${meetX}" cy="${Y}" r="22"/>
+          <text class="mt-meet-txt mtxt" x="${meetX}" y="${Y + 176}">相遇！</text>
+          <text class="mt-txt stxt" x="540" y="${Y + 246}" text-anchor="middle">${p_.sumText || ''}</text>
+        </svg>`);
+      const title = el.querySelector('.meet-title');
+      const nT = el.querySelector('.n-t'), nD = el.querySelector('.n-d');
+      const mL = el.querySelector('.mL'), mR = el.querySelector('.mR');
+      const flag = el.querySelector('.flag'), flash = el.querySelector('.flash');
+      const mtxt = el.querySelector('.mtxt'), stxt = el.querySelector('.stxt');
+      const road = el.querySelector('.mt-road');
+      const rate = el.querySelector('.rate'), bar = el.querySelector('.bar');
+      const barcap = el.querySelector('.barcap');
+      const labels = [...el.querySelectorAll('.nm'), ...el.querySelectorAll('.sp')];
+      return {
+        el, update(l, D) {
+          title.style.opacity = eo(l, 0, .6).toFixed(3);
+          road.style.opacity = ei(l, .1, .6).toFixed(3);
+          rate.style.opacity = eo(l, 1.0, .7).toFixed(3);
+          bar.style.opacity = eo(l, 1.2, .6).toFixed(3);
+          barcap.style.opacity = eo(l, 1.4, .6).toFixed(3);
+          /* 相向而行，匀速：位置与时间成正比 */
+          const span = Math.max(3.4, (D || 14) - 3.6);
+          const pr = p(l, .8, span);
+          const t = tMax * pr;
+          const m1 = v1 * t, m2 = v2 * t;
+          /* 临到相遇时各退 26px，让两个小人并排贴着而不是完全重叠 */
+          const off = 26 * clamp01((pr - .96) / .04);
+          const mid = px(L * v1 / (v1 + v2));
+          const xl = Math.min(X0 + (m1 / L) * (X1 - X0), mid - off);
+          const xr = Math.max(X1 - (m2 / L) * (X1 - X0), mid + off);
+          mL.setAttribute('transform', `translate(${xl.toFixed(1)},${Y})`);
+          mR.setAttribute('transform', `translate(${xr.toFixed(1)},${Y})`);
+          nT.textContent = t.toFixed(1);
+          nD.textContent = Math.round(m1 + m2);
+          bar.style.width = (pr * 100).toFixed(1) + '%';
+          /* 快到相遇时两人会叠在一起，把名字/速度标签淡出 */
+          const lab = 1 - clamp01((pr - .86) / .12);
+          labels.forEach(n => { n.style.opacity = lab.toFixed(3); });
+          const done = pr >= .999;
+          flag.style.opacity = done ? .9 : 0;
+          mtxt.style.opacity = eo(l, .8 + span, .6).toFixed(3);
+          stxt.style.opacity = eo(l, .8 + span + .35, .7).toFixed(3);
+          const fp = p(l, .8 + span, 1.0);
+          flash.style.opacity = done ? (1 - fp).toFixed(3) : 0;
+          flash.setAttribute('r', (22 + 120 * fp).toFixed(1));
+        }
+      };
+    },
+
+    /* 16 知识卡：结尾定格，方便家长截图收藏 */
+    card(p_) {
+      const items = p_.items || [];
+      const el = mk('div', 'card', `
+        <div class="card-box">
+          <div class="card-title">${p_.title || ''}</div>
+          ${items.map((t, i) => `<div class="card-row"><span class="card-n">${i + 1}</span><span class="card-t">${t}</span></div>`).join('')}
+          <div class="card-foot">${p_.foot || ''}</div>
+        </div>`);
+      const box = el.querySelector('.card-box');
+      const rows = [...el.querySelectorAll('.card-row')];
+      const foot = el.querySelector('.card-foot');
+      return {
+        el, update(l) {
+          pop(box, eo(l, 0, .85), .93);
+          rows.forEach((n, i) => rise(n, eo(l, .55 + i * .45, .7), 20));
+          foot.style.opacity = eo(l, 2.2, .8).toFixed(3);
         }
       };
     },
