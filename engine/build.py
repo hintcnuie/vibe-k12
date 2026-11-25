@@ -66,6 +66,11 @@ def main():
     ap.add_argument("--skip-tts", action="store_true")
     ap.add_argument("--skip-render", action="store_true")
     ap.add_argument("--clip", type=float, help="只渲染前 N 秒")
+    ap.add_argument("--no-dgpu", action="store_true",
+                    help="不请求独显（默认会请求高性能 GPU）")
+    ap.add_argument("--fmt", choices=["png", "jpg"], default="jpg",
+                    help="帧格式；jpg 默认（快 3.5 倍，本机实测 PSNR 52.6dB），"
+                         "要无损归档用 --fmt png")
     a = ap.parse_args()
 
     cfg = json.loads(Path(a.content).read_text(encoding="utf-8"))
@@ -170,23 +175,24 @@ def main():
     # ---------- 4. 渲染 ----------
     if not a.skip_render:
         print("■ 逐帧渲染中（可中断后重跑，已渲帧会保留）…")
-        for f in frames_dir.glob("f_*.png"):
+        for f in frames_dir.glob("f_*.*"):
             f.unlink()
         nframes = render.render_frames(
             str(out / "player.html"), str(frames_dir), total, fps, W, H,
-            clip=a.clip)
+            clip=a.clip, high_perf=not a.no_dgpu, fmt=a.fmt)
         print(f"■ 渲染完成：{nframes} 帧，用时 {time.time() - t_start:.0f}s")
     else:
-        nframes = len(list(frames_dir.glob("f_*.png")))
+        nframes = len(list(frames_dir.glob("f_*.*")))
 
     # ---------- 5. 编码 ----------
     if nframes == 0:
         print("\n⚠ 没有帧可编码（可能用了 --skip-render），已停在混音步骤。")
         return
+    ext = "jpg" if a.fmt == "jpg" else "png"
     dst = out / f"{meta['id']}.mp4"
     dur_out = min(total, a.clip) if a.clip else total
     run(["ffmpeg", "-y", "-v", "error",
-         "-framerate", str(fps), "-i", str(frames_dir / "f_%05d.png"),
+         "-framerate", str(fps), "-i", str(frames_dir / f"f_%05d.{ext}"),
          "-i", str(out / "mix.wav"),
          "-t", f"{dur_out:.2f}",
          "-c:v", "libx264", "-preset", "medium", "-crf", "18",
@@ -197,7 +203,7 @@ def main():
     sheet = out / "sheet.jpg"
     try:
         step = max(1, nframes // 12)
-        run(["ffmpeg", "-y", "-v", "error", "-i", str(frames_dir / "f_%05d.png"),
+        run(["ffmpeg", "-y", "-v", "error", "-i", str(frames_dir / f"f_%05d.{ext}"),
              "-vf", f"select='not(mod(n\\,{step}))',scale=480:-2,"
                     "tile=4x3:padding=8:margin=8:color=white",
              "-frames:v", "1", str(sheet)])

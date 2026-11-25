@@ -30,10 +30,11 @@
       }
     },
     {
-      "template": "seasons",
-      "pad": 1.4,
+      "template": "seasons_pie",
+      "pad": 1.6,
       "narration": "春天生长，夏天壮大，秋天收获。那冬天呢？冬天是休息。",
       "props": {
+        "head": "一 年 四 季",
         "items": [
           { "t": "春", "s": "生长" },
           { "t": "夏", "s": "壮大" },

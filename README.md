@@ -50,6 +50,12 @@ cd vibe-k12
 # 整片
 .venv/bin/python engine/build.py content/lidong.json
 
+# 整片，帧用 JPEG 存（默认，比 PNG 快 3.5 倍，画质实测 PSNR 52.6dB）
+.venv/bin/python engine/build.py content/lidong.json --fmt jpg
+
+# 不请求独显（A/B 对比用）
+.venv/bin/python engine/build.py content/lidong.json --no-dgpu
+
 # 先渲 20 秒试片（改版式时用这个，别整片跑）
 .venv/bin/python engine/build.py content/lidong.json --clip 20
 
@@ -92,7 +98,8 @@ cd vibe-k12
 | template | 画面 | 主要 props |
 |---|---|---|
 | `cover` | 封面大标题 + 印章 | `kicker` `title` `sub` `seal` `corner` |
-| `seasons` | 四个圆环并列，可高亮一个 | `items[{t,s}]` `active` |
+| `seasons_pie` | 大圆切成四块披萨扇形，逐块旋转生长，末块描红弧 | `head` `items[{t,s}]` `active` |
+| `seasons` | 四个圆环并列（早期版，保留兼容） | `items[{t,s}]` `active` |
 | `statement` | 两行大字陈述 + 脚注 | `lines[]` `foot` |
 | `bigchar` | 超大单字 + 拼音 + 释义 + 对照条目 | `char` `pinyin` `gloss` `pairs[{k,v}]` |
 | `quote` | 竖排引文 + 出处 | `lines[]` `source` |
@@ -184,24 +191,49 @@ renderer: ANGLE (Intel, ANGLE Metal Renderer: Intel(R) UHD Graphics 630)
 **注意**：`filter: blur/glow` 这类逐帧重算的滤镜比 3D 还贵，现有模板刻意没用；
 `transform/opacity/clip-path` 是合成层操作，几乎免费。
 
-### 5. 性能预算
+### 5. 性能预算与双显卡实测
 
-| 场景 | 实测 | 对全片影响 |
+本机是 2019 款 16″ MacBook Pro，双显卡（**AMD Radeon Pro 5300M 4GB 独显** + Intel UHD 630 核显）。
+实测结论：**Chromium 默认走核显；`--force_high_performance_gpu` 能把它切到独显，但对本项目只值 4%**，
+真正的瓶颈是 PNG 无损编码，不是 GPU。
+
+同一段 5 秒、150 帧、1920×1080、完全相同的页面：
+
+| 配置 | ms/帧 | fps | 相对 |
+|---|---|---|---|
+| 核显 + PNG | 356 | 2.8 | 基准 |
+| 独显 + PNG | 341 | 2.9 | +4% |
+| 核显 + JPEG q95 | 97 | 10.3 | **3.7×** |
+| 独显 + JPEG q95 | 96 | 10.4 | **3.7×** |
+| 独显 + JPEG q100 | 114 | 8.7 | 3.1× |
+
+- **GPU 不是瓶颈**：核显→独显在 PNG 与 JPEG 两种抓帧下都只差 1~4ms，说明这一帧的成本在合成与编码，不在光栅化。
+- **换掉 PNG 才是关键**：PNG 无压缩编码每帧多花约 250ms。整片实测 **2359 帧：PNG 814 秒 → JPEG 188 秒（4.3×）**。
+- **画质够用**：同一帧 PNG vs JPEG(q95) 的 PSNR 是 **52.6 dB**（q100 为 58.8 dB），文字边缘放大对比肉眼无差；
+  后续还有 H.264 CRF 18 的二次压缩，JPEG q95 的损失被淹没。所以 `--fmt jpg` 现在就是**默认**。
+- **什么时候独显才有用**：加 Three.js / 大画布 / 多层混合的镜头才可能拉开差距，纯 DOM 排版场景没必要为它折腾。
+- 开关已内置：`render.py` 的 `high_perf=True`（`build.py` 默认开），关掉用 `--no-dgpu`。
+  想确认当前实际用哪张卡：`chrome://gpu` 或 `page.evaluate` 读 `WEBGL_debug_renderer_info`——本项目实测返回 `ANGLE (AMD, Radeon Pro 5300M ...)`。
+- `sudo` 类系统级切换（`pmset gpuswitch`）在本机需要密码且**对 Chromium 无效**，别走那条路。
+
+其他开销基线（150 帧小样）：
+
+| 场景 | 实测 | 说明 |
 |---|---|---|
-| 当前成片（纯 DOM 排版 + 文字） | 2.9 fps（2353 帧 / 814 秒） | 基准 |
-| 简单页面纯 DOM | 6.5 fps（155ms/帧） | 说明开销在排版与文字抗锯齿 |
-| WebGL 简单场景 | 7.1 fps（140ms/帧） | 截图成本与 DOM 几乎一致 |
-| + SVG 动效 | 基本不变 | 安全，可随意叠加 |
+| 简单页面纯 DOM | 155ms/帧 | 开销在排版与文字抗锯齿 |
+| WebGL 简单场景 | 140ms/帧 | 截图成本与 DOM 几乎一致 |
+| + SVG 动效（扇形/描边生长） | 基本不变 | 安全，可随意叠加 |
 | + Three.js 简单场景 | −20%~30% | 单个镜头可接受 |
 | + 阴影/后处理/大纹理 | < 1 fps | 78 秒片会变 40 分钟，避免 |
 
-结论：**瓶颈是截图与页面合成，不是 WebGL**；真正贵的是场景复杂度。
+结论：**瓶颈是抓帧与编码，不是 3D 能力**；先换帧格式，再考虑复杂度。
 
 ### 6. 面向 3–5 年级的红线
 
 - **每屏一个主运动**，最多再配 2~3 个次运动。5 个以上元素同时动会看不过来。
 - **不要频闪**：每秒 3 次以上的明暗闪烁有光敏性癫痫风险，平台审核也敏感。
-- **缓动统一 `easeOutCubic`**，不用 bounce/elastic——果冻感在知识片里显廉价。
+- **缓动统一 `easeOutCubic`**；只有"物质生长"类动作（扇形长出、柱状拔高）允许 ≤10% 的极轻回弹
+  （`eBack`，见 `scenes.js`），别用 bounce/elastic 那种大果冻感——在知识片里显廉价。
 - **入场 0.6–0.8s，退场 0.3s**，驻留时间 ≥ 旁白时长。
 - 字号优先级：屏幕大字 ≥ 64px，说明文字 ≥ 28px，字幕 28px。
 
@@ -215,11 +247,11 @@ renderer: ANGLE (Intel, ANGLE Metal Renderer: Intel(R) UHD Graphics 630)
 
 | 信息形状 | 模板 | 主运动 |
 |---|---|---|
-| 总—分（四类/四季/四段） | `seasons`（规划改为扇形生长） | 扇形依次生长 + 末块高亮 |
+| 总—分（四类/四季/四段） | `seasons_pie` | 四块扇形依次生长 + 末块红弧高亮（已实现） |
 | 单字/概念溯源 | `bigchar` | 竖切揭示（已实现） |
 | 一句古文/原文 | `quote` | 逐列自上而下（已实现） |
 | 两组对立 | `compare` | 中线生长 + 条目交错（已实现） |
-| 时间/序列 | `timeline` | 轴线生长 + 节点依次弹出（已实现） |
+| 时间/序列 | `timeline` | 轴线生长 + 节点依次弹出 + 红色游标走位（已实现） |
 | 流程/步骤 | `ritual` | 步骤依次滑入（已实现） |
 | 品类/清单 | `food` | 卡片弹入（已实现） |
 | 因果链 | 待加 `flow` | 箭头描边生长 |

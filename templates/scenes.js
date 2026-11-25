@@ -8,6 +8,9 @@
   const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
   const eOut = t => 1 - Math.pow(1 - t, 3);
   const eInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  // 轻微回弹，只用于"切片长出来"这类有体积感的动作
+  const c1 = 1.70158, c3 = c1 + 1;
+  const eBack = t => 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
   const p = (l, s, d) => clamp01((l - s) / d);
   const eo = (l, s, d) => eOut(p(l, s, d));
   const ei = (l, s, d) => eInOut(p(l, s, d));
@@ -83,6 +86,74 @@
             n.classList.toggle('on', i === act && l >= actAt);
           });
           base.style.opacity = ei(l, .1, 1.1).toFixed(3);
+        }
+      };
+    },
+
+    /* 02b 四季披萨：四块 90° 扇形依次生长（几何由时间直接算出） */
+    seasons_pie(p_) {
+      const items = (p_.items || []).slice(0, 4);
+      const R = 268, CX = 300, CY = 300;
+      const midOf = i => (-45 + 90 * i) * Math.PI / 180;
+      const labs = items.map((it, i) => {
+        const a = midOf(i), lx = CX + .60 * R * Math.cos(a), ly = CY + .60 * R * Math.sin(a);
+        return `<g class="pie-lab"><text class="pie-l-c" x="${lx.toFixed(1)}" y="${(ly - 16).toFixed(1)}">${it.t || ''}</text>
+                <text class="pie-l-s" x="${lx.toFixed(1)}" y="${(ly + 40).toFixed(1)}">${it.s || ''}</text></g>`;
+      }).join('');
+      const el = mk('div', 'pie', `
+        <div class="pie-head">${p_.head || '一年四季'}</div>
+        <div class="pie-dial">
+          <svg class="pie-svg" viewBox="0 0 600 600">
+            <circle class="pie-ring" cx="300" cy="300" r="292"></circle>
+            ${items.map((_, i) => `<path class="pie-slice s${i}" d=""></path>`).join('')}
+            <path class="pie-arc" d=""></path>
+            <circle class="pie-hub" cx="300" cy="300" r="36"></circle>
+            <text class="pie-hub-t" x="300" y="300">年</text>
+            ${labs}
+          </svg>
+        </div>`);
+      const head = el.querySelector('.pie-head');
+      const ring = el.querySelector('.pie-ring');
+      const hub = el.querySelector('.pie-hub');
+      const hubT = el.querySelector('.pie-hub-t');
+      const slices = [...el.querySelectorAll('.pie-slice')];
+      const labels = [...el.querySelectorAll('.pie-lab')];
+      const harc = el.querySelector('.pie-arc');
+
+      const arc = (i, r) => {
+        const a0 = (-90 + 90 * i) * Math.PI / 180;
+        const a1 = (-90 + 90 * (i + 1)) * Math.PI / 180;
+        const x0 = (CX + r * Math.cos(a0)).toFixed(2), y0 = (CY + r * Math.sin(a0)).toFixed(2);
+        const x1 = (CX + r * Math.cos(a1)).toFixed(2), y1 = (CY + r * Math.sin(a1)).toFixed(2);
+        return `M${CX},${CY} L${x0},${y0} A${r},${r} 0 0,1 ${x1},${y1} Z`;
+      };
+
+      return {
+        el, update(l) {
+          head.style.opacity = eo(l, 0, .55).toFixed(3);
+          ring.style.opacity = ei(l, 0, .9).toFixed(3);
+          slices.forEach((n, i) => {
+            const st = .32 + i * .42;
+            const r = R * Math.min(1, eBack(p(l, st, .95)));
+            n.setAttribute('d', arc(i, Math.max(r, .5)));
+            n.style.opacity = eo(l, st, .2) > 0 ? 1 : 0;
+            labels[i].style.opacity = eo(l, st + .45, .6).toFixed(3);
+          });
+          const hp = eo(l, 2.45, .7);          // 冬至那块收尾高亮
+          const A0 = 180 * Math.PI / 180, A1 = 270 * Math.PI / 180;
+          const hr = R * 1.002;
+          const hx0 = (CX + hr * Math.cos(A0)), hy0 = (CY + hr * Math.sin(A0));
+          const hx1 = (CX + hr * Math.cos(A1)), hy1 = (CY + hr * Math.sin(A1));
+          harc.setAttribute('d', `M${hx0.toFixed(1)},${hy0.toFixed(1)} A${hr},${hr} 0 0,1 ${hx1.toFixed(1)},${hy1.toFixed(1)}`);
+          const arcLen = Math.PI / 2 * hr;
+          harc.style.strokeDasharray = `${(arcLen * hp).toFixed(1)} 999`;
+          harc.style.opacity = hp > 0 ? 1 : 0;
+          if (hp > 0) {
+            labels[3].style.transform = `scale(${(1 + .08 * hp).toFixed(3)})`;
+            labels[3].style.transformOrigin = `${CX}px ${CY}px`;
+          }
+          hub.style.opacity = ei(l, 2.1, .6).toFixed(3);
+          hubT.style.opacity = ei(l, 2.15, .6).toFixed(3);
         }
       };
     },
@@ -184,12 +255,13 @@
       const el = mk('div', 'tl', `
         <div class="tl-badge">${p_.badge || ''}</div>
         <div class="tl-axis"></div>
-        <div class="tl-nodes">${pts.map(t => `
+        <div class="tl-nodes"><span class="tl-run"></span>${pts.map(t => `
           <div class="tl-node"><span class="tl-dot"></span><span class="tl-name">${t}</span></div>`).join('')}
         </div>
         <div class="tl-fact">${p_.fact || ''}</div>`);
       const badge = el.querySelector('.tl-badge'), axis = el.querySelector('.tl-axis'),
-            nodes = [...el.querySelectorAll('.tl-node')], fact = el.querySelector('.tl-fact');
+            nodes = [...el.querySelectorAll('.tl-node')], fact = el.querySelector('.tl-fact'),
+            run = el.querySelector('.tl-run');
       return {
         el, update(l) {
           badge.style.opacity = eo(l, 0, .55).toFixed(3);
@@ -200,6 +272,11 @@
             n.style.transform = `translateY(${(1 - pr) * 22}px)`;
             n.classList.toggle('on', i === act && l >= 2.3);
           });
+          /* 红色游标沿轴走一遍，停在当前节点上（时间在流动的视觉锚点） */
+          const gi = Math.max(0, act), span = 1120 / Math.max(1, pts.length - 1);
+          const prog = eInOut(p(l, 1.0, 1.3));
+          run.style.left = `${(60 + span * gi * prog - 6).toFixed(1)}px`;
+          run.style.opacity = p(l, 1.0, 1.5) > 0 ? 1 : 0;
           fact.style.opacity = eo(l, 2.5, .8).toFixed(3);
         }
       };
