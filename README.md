@@ -26,7 +26,8 @@ python3 -m venv .venv
 ```
 vibe-k12/
 ├── content/            # ★ 只改这里：每期一个 JSON
-│   └── lidong.json
+│   ├── lidong.json     # 立冬（语文/节气）
+│   └── lucheng.json    # 路程·时间·速度（四年级数学）
 ├── engine/
 │   ├── build.py        # 主流程（配音→时间轴→渲染→混音→编码）
 │   ├── tts_edge.py     # edge-tts 配音（在线合成，少年音）
@@ -39,8 +40,18 @@ vibe-k12/
 │   ├── style.css       # 视觉系统：色板/字体/版式
 │   └── scenes.js       # 场景模板库
 ├── out/<id>/           # 产物：mp4、mix.wav、frames、timeline.json、sheet.jpg
+├── docs/
+│   ├── lucheng-lesson.md  # 课本梳理 + 讲稿 + 易错点
+│   └── storyboard.md      # 立冬分镜
 └── .venv               # 项目环境
 ```
+
+## 已有成片
+
+| 片子 | 内容 | 时长 | 脚本 |
+|---|---|---|---|
+| `out/lidong/lidong.mp4` | 立冬（二十四节气） | 78.6s | `content/lidong.json` |
+| `out/lucheng/lucheng.mp4` | 路程·时间·速度（四上数学） | 167.3s | `content/lucheng.json` |
 
 ## 跑一条片子
 
@@ -106,7 +117,11 @@ cd vibe-k12
 | `compare` | 左右两栏对比 | `left{title,items[]}` `right{...}` |
 | `timeline` | 横轴四节点，可高亮 | `points[]` `active` `badge` `fact` |
 | `ritual` | 左标题 + 右三步流程 | `title` `steps[{n,t}]` |
-| `food` | 三张圆角卡片 | `title` `items[{e,n,d}]` `note` |
+| `food` | 圆角卡片（3~4 张），图标 + 名称 + 说明 | `title` `items[{e,n,d}]` `note` |
+| `table` | 成绩表：表头 + 数据行，可高亮 | `title` `cols[]` `rows[{cells[],hl}]` `note` |
+| `formula` | 三词公式，逐块落下，每项带释义 | `a` `b` `c` `op` `ca` `cb` `cc` `note` |
+| `motion` | 路面 + 小车匀速行驶 + 时间/路程/速度实时读数 | `v` `path` `tMax` `unitT` `unitD` `title` `note` |
+| `ratio` | 关系三角：路程在顶，速度×时间在下，三个变形公式 | `top` `left` `right` `formulas[]` `note` |
 | `outro` | 结尾三行 + 落款印章 | `lines[]` `tag` |
 
 要加新模板：在 `templates/scenes.js` 里加一个函数，返回 `{el, update(local,dur)}`，
@@ -266,6 +281,9 @@ renderer: ANGLE (Intel, ANGLE Metal Renderer: Intel(R) UHD Graphics 630)
 - 只动 `transform / opacity / clip-path`，不用 `filter: blur`。
 - 不依赖外部字体与网络资源，图标内联。
 - 尺寸用 `vw/vh` 百分比或绝对 px 都可以，但**底部 200px 是字幕安全区**。
+- **凡是要表达"匀速/比例"的运动模板，时间轴必须线性**（`update(l, dur)` 里用 `p(l, s, d)` 而不是 `eo`），
+  缓动会把匀速画成变速，数值和位移就对不上了。`motion` 模板即按此实现：`d = v × t`，位置由 `d` 反算。
+- 数值实时变化的模板（`motion` 的读数），数字用 `toFixed` 收敛，避免亚像素抖动。
 
 ## 配音
 

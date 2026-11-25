@@ -224,6 +224,82 @@ body{ -webkit-font-smoothing:antialiased; }
 .pie-l-s{font-family:var(--sans);font-size:19px;letter-spacing:.16em;
   fill:rgba(251,248,240,.76);text-anchor:middle;dominant-baseline:central;}
 
+/* ---------- 11 成绩表 ---------- */
+.tb{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;}
+.tb-title{font-family:var(--serif);font-size:46px;color:var(--ink);
+  letter-spacing:.12em;margin-bottom:40px;}
+.tb-grid{width:1120px;display:grid;border-top:2.5px solid var(--ink-2);}
+.tb-cell{padding:20px 16px;font-family:var(--sans);font-size:40px;
+  color:var(--ink-2);text-align:center;border-bottom:1px solid var(--line);}
+.tb-head{font-size:25px;letter-spacing:.2em;color:var(--mute);
+  border-bottom:1.5px solid var(--ink-2);padding:16px;}
+.tb-body.on{color:var(--red);font-weight:600;background:rgba(169,50,38,.07);}
+.tb-note{font-family:var(--sans);font-size:26px;color:var(--mute);
+  margin-top:34px;letter-spacing:.1em;}
+
+/* ---------- 12 公式 ---------- */
+.fm{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;}
+.fm-grid{display:grid;grid-template-columns:250px 76px 250px 76px 250px;
+  align-items:center;justify-items:center;row-gap:22px;}
+.fm-term{font-family:var(--serif);font-size:92px;color:var(--ink);
+  letter-spacing:.06em;line-height:1.1;}
+.fm-term.t0{color:var(--red);}
+.fm-op{font-family:var(--serif);font-size:72px;color:var(--ink-2);}
+.fm-op.o0{font-size:64px;}
+.fm-cap{font-family:var(--sans);font-size:21px;color:var(--mute);
+  letter-spacing:.08em;text-align:center;}
+.fm-note{font-family:var(--sans);font-size:27px;color:var(--ink-2);
+  margin-top:56px;letter-spacing:.06em;}
+
+/* ---------- 13 运动演示 ---------- */
+.mo{position:absolute;inset:0;}
+.mo-title{position:absolute;top:104px;left:0;right:0;text-align:center;
+  font-family:var(--serif);font-size:44px;color:var(--ink);letter-spacing:.1em;}
+.mo-read{position:absolute;top:196px;left:0;right:0;display:flex;
+  justify-content:center;gap:34px;}
+.mo-tile{width:250px;padding:16px 0 14px;text-align:center;
+  border:1.5px solid var(--line);border-radius:10px;
+  background:rgba(255,255,255,.42);}
+.mo-tile.hi{border-color:var(--red);background:rgba(169,50,38,.05);}
+.mo-k{font-family:var(--sans);font-size:19px;color:var(--mute);letter-spacing:.24em;}
+.mo-n{font-family:var(--serif);font-size:54px;color:var(--ink);line-height:1.15;}
+.mo-tile.hi .mo-n{color:var(--red);}
+.mo-u{font-family:var(--sans);font-size:17px;color:var(--mute);letter-spacing:.1em;}
+.mo-svg{position:absolute;left:0;top:0;width:1920px;height:1080px;}
+.mo-road{stroke:var(--ink);stroke-width:3;}
+.mo-tick{stroke:var(--ink);stroke-width:1.2;}
+.mo-tl{font-family:var(--sans);font-size:19px;fill:var(--mute);text-anchor:middle;}
+.mo-fill{fill:var(--teal);}
+.mo-mark line{stroke:var(--red);stroke-width:1.5;stroke-dasharray:5 5;}
+.mo-ml{font-family:var(--sans);font-size:19px;fill:var(--red);text-anchor:middle;}
+.mo-car .car-body,.mo-car .car-top{fill:#2E6B63;}
+.mo-car .car-wh{fill:#1B1A17;}
+.mo-car .car-hub{fill:#F6F3EC;}
+.mo-str,.mo-end{font-family:var(--sans);font-size:21px;fill:var(--ink-2);}
+.mo-note{position:absolute;left:0;right:0;bottom:196px;text-align:center;
+  font-family:var(--sans);font-size:27px;color:var(--ink-2);letter-spacing:.06em;}
+
+/* ---------- 14 关系三角 ---------- */
+.ra{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;}
+.ra-title{font-family:var(--sans);font-size:25px;letter-spacing:.36em;
+  color:var(--mute);margin-bottom:6px;}
+.ra-svg{width:740px;height:362px;}
+.ra-line{stroke:var(--ink);stroke-width:2;}
+.ra-node circle{fill:var(--paper);stroke:var(--ink);stroke-width:2;}
+.ra-node.n0 circle{fill:var(--red);stroke:none;}
+.ra-node text{font-family:var(--serif);font-size:54px;fill:var(--ink);
+  text-anchor:middle;dominant-baseline:central;}
+.ra-node.n0 text{fill:#FBF8F0;}
+.ra-x{font-family:var(--serif);font-size:44px;fill:var(--ink-2);text-anchor:middle;}
+.ra-list{display:flex;gap:22px;margin-top:22px;}
+.ra-f{font-family:var(--sans);font-size:27px;color:var(--ink-2);
+  border:1.5px solid var(--line);border-radius:999px;padding:11px 24px;}
+.ra-f.f0{border-color:var(--red);color:var(--red);}
+.ra-note{font-family:var(--sans);font-size:23px;color:var(--mute);margin-top:22px;}
+
 /* ---------- 字幕 ---------- */
 .subtitle{position:absolute;left:50%;bottom:46px;transform:translateX(-50%);
   max-width:1480px;text-align:center;font-family:var(--sans);

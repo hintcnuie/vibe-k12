@@ -334,6 +334,172 @@
       };
     },
 
+    /* 11 成绩表（数学课用：表头 + 行，可高亮一行） */
+    table(p_) {
+      const cols = p_.cols || [];
+      const rows = p_.rows || [];
+      const el = mk('div', 'tb', `
+        <div class="tb-title">${p_.title || ''}</div>
+        <div class="tb-grid" style="grid-template-columns:repeat(${cols.length},1fr)">
+          ${cols.map(c => `<div class="tb-cell tb-head">${c}</div>`).join('')}
+          ${rows.map((r, i) => r.cells.map(c =>
+            `<div class="tb-cell tb-body" data-row="${i}">${c}</div>`).join('')).join('')}
+        </div>
+        <div class="tb-note">${p_.note || ''}</div>`);
+      const title = el.querySelector('.tb-title'), note = el.querySelector('.tb-note');
+      const heads = [...el.querySelectorAll('.tb-head')];
+      const bodies = [...el.querySelectorAll('.tb-body')];
+      const hlRows = rows.map((r, i) => r.hl ? i : -1).filter(i => i >= 0);
+      return {
+        el, update(l) {
+          title.style.opacity = eo(l, 0, .6).toFixed(3);
+          heads.forEach((h, i) => rise(h, eo(l, .3 + i * .12, .6), 14));
+          bodies.forEach((b, i) => {
+            const r = +b.dataset.row;
+            rise(b, eo(l, .75 + r * .22, .6), 18);
+            const on = hlRows.includes(r) && l >= 2.0 + hlRows.indexOf(r) * .25;
+            b.classList.toggle('on', on);
+          });
+          note.style.opacity = eo(l, 2.6, .8).toFixed(3);
+        }
+      };
+    },
+
+    /* 12 公式：三个词 + 算子，逐块落下，每项带释义 */
+    formula(p_) {
+      const el = mk('div', 'fm', `
+        <div class="fm-grid">
+          <span class="fm-term t0">${p_.a || ''}</span>
+          <span class="fm-op o0">=</span>
+          <span class="fm-term t1">${p_.b || ''}</span>
+          <span class="fm-op o1">${p_.op || '÷'}</span>
+          <span class="fm-term t2">${p_.c || ''}</span>
+          <span class="fm-cap k0">${p_.ca || ''}</span><span></span>
+          <span class="fm-cap k1">${p_.cb || ''}</span><span></span>
+          <span class="fm-cap k2">${p_.cc || ''}</span>
+        </div>
+        <div class="fm-note">${p_.note || ''}</div>`);
+      const terms = [...el.querySelectorAll('.fm-term')];
+      const ops = [...el.querySelectorAll('.fm-op')];
+      const caps = [...el.querySelectorAll('.fm-cap')];
+      const note = el.querySelector('.fm-note');
+      return {
+        el, update(l) {
+          terms.forEach((n, i) => pop(n, eo(l, .15 + i * .34, .7), .86));
+          ops.forEach((n, i) => { n.style.opacity = eo(l, .55 + i * .34, .5).toFixed(3); });
+          caps.forEach((n, i) => rise(n, eo(l, 1.35 + i * .3, .7), 16));
+          note.style.opacity = eo(l, 2.5, .8).toFixed(3);
+        }
+      };
+    },
+
+    /* 13 运动：路面 + 小车 + 三个实时读数（路程/时间/速度） */
+    motion(p_) {
+      const v = p_.v || 80, L = p_.path || 240, tMax = p_.tMax || 3;
+      const X0 = 250, X1 = 1650, Y = 620;
+      const xOf = d => X0 + (d / L) * (X1 - X0);
+      const uT = p_.unitT || '分', uD = p_.unitD || '米';
+      const marks = [];
+      for (let m = v; m < L - 1e-6; m += v) marks.push(m);
+      const tk = [];
+      const step = L / 6;
+      for (let i = 0; i <= 6; i++) tk.push(i * step);
+      const el = mk('div', 'mo', `
+        <div class="mo-title">${p_.title || ''}</div>
+        <div class="mo-read">
+          <div class="mo-tile"><div class="mo-k">时间</div><div class="mo-n n-t">0.0</div><div class="mo-u">${uT}</div></div>
+          <div class="mo-tile"><div class="mo-k">路程</div><div class="mo-n n-d">0</div><div class="mo-u">${uD}</div></div>
+          <div class="mo-tile hi"><div class="mo-k">速度</div><div class="mo-n n-v">${v}</div><div class="mo-u">${uD}/${uT}</div></div>
+        </div>
+        <svg class="mo-svg" viewBox="0 0 1920 1080">
+          <line class="mo-road" x1="${X0}" y1="${Y}" x2="${X1}" y2="${Y}"/>
+          ${tk.map(d => `<line class="mo-tick" x1="${xOf(d).toFixed(1)}" y1="${Y + 6}" x2="${xOf(d).toFixed(1)}" y2="${Y + 22}"/>
+            <text class="mo-tl" x="${xOf(d).toFixed(1)}" y="${Y + 58}">${Math.round(d)}</text>`).join('')}
+          <rect class="mo-fill" x="${X0}" y="${Y - 9}" width="0" height="9" rx="4"/>
+          ${marks.map((m, i) => `<g class="mo-mark" data-d="${m}" style="opacity:0">
+            <line x1="${xOf(m).toFixed(1)}" y1="${Y - 46}" x2="${xOf(m).toFixed(1)}" y2="${Y - 16}"/>
+            <text class="mo-ml" x="${xOf(m).toFixed(1)}" y="${Y - 62}">${i + 1}${uT} · ${Math.round(m)}${uD}</text></g>`).join('')}
+          <g class="mo-car" transform="translate(${X0 - 46},${Y - 54})">
+            <rect class="car-body" x="0" y="14" width="96" height="40" rx="12"/>
+            <path class="car-top" d="M18,14 L30,-6 L66,-6 L78,14 Z"/>
+            <circle class="car-wh" cx="24" cy="56" r="11"/><circle class="car-wh" cx="72" cy="56" r="11"/>
+            <circle class="car-hub" cx="24" cy="56" r="4"/><circle class="car-hub" cx="72" cy="56" r="4"/>
+          </g>
+          <text class="mo-end" x="${X1 + 96}" y="${Y + 12}">${p_.endLabel || ''}</text>
+          <text class="mo-str" x="${X0 - 40}" y="${Y + 12}" text-anchor="end">${p_.startLabel || ''}</text>
+        </svg>
+        <div class="mo-note">${p_.note || ''}</div>`);
+      const title = el.querySelector('.mo-title'), note = el.querySelector('.mo-note');
+      const svg = el.querySelector('.mo-svg'), car = el.querySelector('.mo-car');
+      const fill = el.querySelector('.mo-fill');
+      const nT = el.querySelector('.n-t'), nD = el.querySelector('.n-d');
+      const markEls = [...el.querySelectorAll('.mo-mark')];
+      const endLbl = el.querySelector('.mo-end'), strLbl = el.querySelector('.mo-str');
+      const ticks = [...el.querySelectorAll('.mo-tick, .mo-tl')];
+      return {
+        el, update(l, D) {
+          title.style.opacity = eo(l, 0, .6).toFixed(3);
+          const intro = eo(l, .3, .8);
+          svg.style.opacity = intro.toFixed(3);
+          ticks.forEach(t => t.style.opacity = (.35 * intro).toFixed(3));
+          endLbl.style.opacity = (intro * .8).toFixed(3);
+          strLbl.style.opacity = (intro * .8).toFixed(3);
+          /* 匀速：位移与时间成正比，绝不能用缓动（否则"速度"就不均匀了） */
+          const span = Math.max(2.6, (D || 8) - 2.6);
+          const pr = p(l, .9, span);
+          const t = tMax * pr;
+          const d = Math.min(v * t, L);
+          const x = xOf(d);
+          fill.setAttribute('width', (x - X0).toFixed(1));
+          car.setAttribute('transform', `translate(${(x - 48).toFixed(1)},${Y - 54})`);
+          nT.textContent = t.toFixed(1);
+          nD.textContent = Math.round(d);
+          markEls.forEach(m => {
+            const md = +m.dataset.d;
+            m.style.opacity = d >= md - .5 ? 1 : 0;
+          });
+          note.style.opacity = eo(l, .9 + span + .25, .8).toFixed(3);
+        }
+      };
+    },
+
+    /* 14 关系三角：路程在顶，速度×时间在下 */
+    ratio(p_) {
+      const el = mk('div', 'ra', `
+        <div class="ra-title">${p_.title || ''}</div>
+        <svg class="ra-svg" viewBox="0 0 960 470">
+          <line class="ra-line l0" x1="480" y1="120" x2="248" y2="360"/>
+          <line class="ra-line l1" x1="480" y1="120" x2="712" y2="360"/>
+          <g class="ra-node n0"><circle cx="480" cy="110" r="86"/><text x="480" y="110">${p_.top || '路程'}</text></g>
+          <g class="ra-node n1"><circle cx="232" cy="360" r="78"/><text x="232" y="360">${p_.left || '速度'}</text></g>
+          <g class="ra-node n2"><circle cx="728" cy="360" r="78"/><text x="728" y="360">${p_.right || '时间'}</text></g>
+          <text class="ra-x" x="480" y="404">×</text>
+        </svg>
+        <div class="ra-list">
+          ${(p_.formulas || []).map((f, i) => `<div class="ra-f f${i}">${f}</div>`).join('')}
+        </div>
+        <div class="ra-note">${p_.note || ''}</div>`);
+      const title = el.querySelector('.ra-title'), note = el.querySelector('.ra-note');
+      const lines = [...el.querySelectorAll('.ra-line')];
+      const nodes = [...el.querySelectorAll('.ra-node')];
+      const cross = el.querySelector('.ra-x');
+      const fs = [...el.querySelectorAll('.ra-f')];
+      return {
+        el, update(l) {
+          title.style.opacity = eo(l, 0, .6).toFixed(3);
+          lines.forEach((n, i) => {
+            n.style.strokeDasharray = '300';
+            n.style.strokeDashoffset = (300 * (1 - ei(l, .3 + i * .25, .8))).toFixed(1);
+            n.style.opacity = p(l, .3 + i * .25, .2) > 0 ? 1 : 0;
+          });
+          nodes.forEach((n, i) => pop(n, eo(l, .55 + i * .3, .7), .84));
+          cross.style.opacity = eo(l, 1.5, .5).toFixed(3);
+          fs.forEach((n, i) => rise(n, eo(l, 1.75 + i * .35, .7), 18));
+          note.style.opacity = eo(l, 2.9, .7).toFixed(3);
+        }
+      };
+    },
+
     /* 10 结尾 */
     outro(p_) {
       const lines = p_.lines || [];

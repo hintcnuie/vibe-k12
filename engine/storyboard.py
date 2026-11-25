@@ -11,6 +11,8 @@ TEMPLATE_CN = {
     "cover": "封面", "seasons": "四季并列", "statement": "大字陈述",
     "bigchar": "单字释义", "quote": "竖排引文", "compare": "左右对比",
     "timeline": "时间轴", "ritual": "流程三步", "food": "卡片三连",
+    "seasons_pie": "四季扇形", "table": "成绩表", "formula": "公式",
+    "motion": "运动演示", "ratio": "关系三角",
     "outro": "结尾",
 }
 
@@ -32,6 +34,12 @@ def big_text(pr):
         return f"{pr['left'].get('title', '')} ↔ {pr['right'].get('title', '')}"
     if pr.get("items"):
         return " / ".join(x.get("t") or x.get("n") or "" for x in pr["items"])
+    if pr.get("a") and pr.get("b"):
+        return f"{pr['a']} = {pr['b']} {pr.get('op', '÷')} {pr.get('c', '')}"
+    if pr.get("top") and pr.get("left"):
+        return f"{pr['top']} / {pr['left']} / {pr['right']}"
+    if pr.get("rows"):
+        return " ｜ ".join(" ".join(r["cells"]) for r in pr["rows"])
     return ""
 
 
