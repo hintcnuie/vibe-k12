@@ -27,7 +27,9 @@ python3 -m venv .venv
 vibe-k12/
 ├── content/            # ★ 只改这里：每期一个 JSON
 │   ├── lidong.json     # 立冬（语文/节气）
-│   └── lucheng.json    # 路程·时间·速度（四年级数学）
+│   ├── lucheng.json    # 路程·时间·速度（横版 16:9，167s）
+│   ├── sudu.json       # 路程·时间·速度（竖版 3:4，86.7s，课本 P79–P80）
+│   └── xiangyu.json    # 相遇问题（竖版 3:4，超出课本，练习用）
 ├── engine/
 │   ├── build.py        # 主流程（配音→时间轴→渲染→混音→编码）
 │   ├── tts_edge.py     # edge-tts 配音（在线合成，少年音）
@@ -41,6 +43,8 @@ vibe-k12/
 │   └── scenes.js       # 场景模板库
 ├── out/<id>/           # 产物：mp4、mix.wav、frames、timeline.json、sheet.jpg
 ├── docs/
+│   ├── scripts/           # 讲稿文字版（每期一个 JSON：画面文字+旁白+课本出处）
+│   │   └── sudu.json
 │   ├── lucheng-lesson.md  # 课本梳理 + 讲稿 + 易错点
 │   └── storyboard.md      # 立冬分镜
 └── .venv               # 项目环境
