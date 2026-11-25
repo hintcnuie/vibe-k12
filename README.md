@@ -52,7 +52,8 @@ vibe-k12/
 |---|---|---|---|
 | `out/lidong/lidong.mp4` | 立冬（二十四节气） | 78.6s | `content/lidong.json` |
 | `out/lucheng/lucheng.mp4` | 路程·时间·速度（四上数学） | 167.3s | `content/lucheng.json` |
-| `out/xiangyu/xiangyu.mp4` | 相遇问题（四上数学 · 竖版 3:4 · 童趣主题） | 68.9s | `content/xiangyu.json` |
+| `out/xiangyu/xiangyu.mp4` | 相遇问题（超出课本，仅作练习；竖版 3:4 · 童趣主题） | 68.9s | `content/xiangyu.json` |
+| `out/sudu/sudu.mp4` | 路程·时间·速度（人教版四上 P79–P80 · 竖版 3:4 · 童趣主题） | 86.7s | `content/sudu.json` |
 
 ## 跑一条片子
 
@@ -109,7 +110,7 @@ cd vibe-k12
 
 | template | 画面 | 主要 props |
 |---|---|---|
-| `cover` | 封面大标题 + 印章 | `kicker` `title` `sub` `seal` `corner` |
+| `cover` | 封面大标题 + 印章（可选 `size` 覆盖字号，长标题防换行） | `kicker` `title` `sub` `seal` `corner` `size` |
 | `seasons_pie` | 大圆切成四块披萨扇形，逐块旋转生长，末块描红弧 | `head` `items[{t,s}]` `active` |
 | `seasons` | 四个圆环并列（早期版，保留兼容） | `items[{t,s}]` `active` |
 | `statement` | 两行大字陈述 + 脚注 | `lines[]` `foot` |

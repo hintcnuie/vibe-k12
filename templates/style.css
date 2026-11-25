@@ -354,6 +354,10 @@ body.theme-kids .cmp-col:last-of-type .cmp-t{color:#0E9C79;}
    竖版（3:4）：宽只有 1080，全部按短边重排 —— 字号放大、容器改竖向
    —— meta.height > meta.width 时自动生效
    ============================================================ */
+body.portrait .st-l1{font-size:72px;}
+body.portrait .st-l2{font-size:94px;margin-top:18px;}
+body.portrait .st-line{margin:40px 0 26px;}
+body.portrait .st-foot{font-size:24px;}
 body.portrait .cv-kicker{font-size:22px;letter-spacing:.34em;margin-bottom:36px;}
 body.portrait .cv-title{font-size:178px;letter-spacing:.06em;}
 body.portrait .cv-rule{width:0;margin:54px 0 42px;height:3px;}

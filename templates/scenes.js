@@ -44,7 +44,7 @@
     cover(p_) {
       const el = mk('div', 'cover', `
         <div class="cv-kicker">${p_.kicker || ''}</div>
-        <div class="cv-title">${p_.title || ''}</div>
+        <div class="cv-title"${p_.size ? ` style="font-size:${p_.size}px"` : ''}>${p_.title || ''}</div>
         <div class="cv-rule"></div>
         <div class="cv-sub">${p_.sub || ''}</div>
         <div class="cv-seal seal" style="width:74px;height:118px;">${p_.seal || ''}</div>
