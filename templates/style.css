@@ -506,3 +506,26 @@ body.portrait .subtitle{max-width:920px;font-size:25px;bottom:44px;line-height:1
 .rc-now{position:absolute;top:-40px;left:50%;transform:translateX(-50%);
   white-space:nowrap;font-family:var(--sans);font-size:18px;color:var(--lc);
   letter-spacing:.04em;opacity:0;}
+
+/* ---------- 15b 字形演变（竖版 1080×1440） ---------- */
+.glyph{position:absolute;inset:0;}
+.gl-badge{position:absolute;top:132px;left:0;right:0;text-align:center;
+  font-family:var(--serif);font-size:34px;color:var(--ink-2);letter-spacing:.3em;}
+.gl-card{position:absolute;top:226px;left:50%;transform:translateX(-50%);
+  width:560px;height:520px;border-radius:34px;background:#fff;
+  border:2px solid var(--line);box-shadow:0 18px 40px rgba(18,58,90,.10);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--gc,var(--ink));}
+.gl-svg{width:380px;height:380px;}
+.gl-svg path,.gl-svg line,.gl-svg circle{fill:none;stroke:currentColor;
+  stroke-width:7;stroke-linecap:round;stroke-linejoin:round;}
+.gl-svg .gl-sun{fill:none;stroke:var(--red);}
+.gl-svg .gl-dot{fill:var(--red);stroke:none;}
+.gl-char{font-family:var(--serif);font-size:300px;line-height:1;color:var(--ink);font-weight:600;}
+.gl-py{font-family:var(--sans);font-size:26px;color:var(--mute);letter-spacing:.3em;margin-top:10px;}
+.gl-notes{position:absolute;top:830px;left:110px;right:110px;
+  display:flex;flex-direction:column;gap:30px;}
+.gl-note{display:flex;gap:18px;align-items:flex-start;font-family:var(--sans);
+  font-size:30px;color:var(--ink-2);line-height:1.5;}
+.gl-dot{width:10px;height:10px;border-radius:50%;background:var(--gc,var(--red));
+  flex:none;margin-top:15px;}

@@ -19,6 +19,31 @@
   // 注意 scenes.js 在 player 注入 portrait class 之前就已求值，必须调用时再判断
   const isPortrait = () => document.body.classList.contains('portrait');
 
+  /* 字形演变线稿：100×100 视口风格，stroke=currentColor，太阳/红点单独上色 */
+  const GLYPHS = {
+    /* 甲骨文：一缕丝线拱起，两头各打一个疙瘩（结） */
+    jiagu: `
+      <path d="M72 246 Q72 78 150 78 Q228 78 228 246"/>
+      <circle cx="72" cy="246" r="27"/>
+      <circle cx="228" cy="246" r="27"/>`,
+    /* 金文：圆天幕罩住太阳，左右两横像锁 */
+    jinwen: `
+      <path d="M64 236 Q64 84 150 84 Q236 84 236 236"/>
+      <line x1="64" y1="236" x2="64" y2="272"/>
+      <line x1="236" y1="236" x2="236" y2="272"/>
+      <line x1="48" y1="196" x2="108" y2="196"/>
+      <line x1="192" y1="196" x2="252" y2="196"/>
+      <circle class="gl-sun" cx="150" cy="146" r="32"/>
+      <circle class="gl-dot" cx="150" cy="146" r="7"/>`,
+    /* 小篆：日消失，天幕下添冰凌交叉 */
+    xiaozhuan: `
+      <path d="M78 150 Q78 74 150 74 Q222 74 222 150"/>
+      <line x1="52" y1="172" x2="248" y2="172"/>
+      <line x1="116" y1="206" x2="150" y2="266"/>
+      <line x1="184" y1="206" x2="150" y2="266"/>
+      <line x1="150" y1="196" x2="150" y2="226"/>`
+  };
+
   const mk = (tag, cls, html) => {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -671,6 +696,32 @@
           const fp = p(l, .8 + span, 1.0);
           flash.style.opacity = done ? (1 - fp).toFixed(3) : 0;
           flash.setAttribute('r', (22 + 120 * fp).toFixed(1));
+        }
+      };
+    },
+
+    /* 15b 字形演变：朝代标签 + 大字/线稿字形 + 注释条目（竖版 1080×1440） */
+    glyph(p_) {
+      const notes = p_.notes || [];
+      const isChar = p_.glyph === 'kaishu';
+      const glyphHtml = isChar
+        ? `<div class="gl-char">${p_.char || '冬'}</div><div class="gl-py">${p_.pinyin || ''}</div>`
+        : `<svg class="gl-svg" viewBox="0 0 300 300">${GLYPHS[p_.glyph] || ''}</svg>`;
+      const el = mk('div', 'glyph', `
+        <div class="gl-badge">${p_.era || ''}</div>
+        <div class="gl-card">${glyphHtml}</div>
+        <div class="gl-notes">${notes.map(n =>
+          `<div class="gl-note"><span class="gl-dot"></span><span>${n}</span></div>`).join('')}</div>`);
+      el.style.setProperty('--gc', p_.tone || 'var(--ink)');
+      const badge = el.querySelector('.gl-badge'), card = el.querySelector('.gl-card');
+      const nts = [...el.querySelectorAll('.gl-note')];
+      return {
+        el, update(l) {
+          badge.style.opacity = eo(l, 0, .6).toFixed(3);
+          const cp = eo(l, .2, .85);
+          card.style.opacity = cp.toFixed(3);
+          card.style.transform = `translateX(-50%) scale(${(0.9 + 0.1 * cp).toFixed(3)})`;
+          nts.forEach((n, i) => rise(n, eo(l, 1.0 + i * .35, .7), 24));
         }
       };
     },

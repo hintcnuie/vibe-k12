@@ -28,7 +28,8 @@ vibe-k12/
 ├── content/            # ★ 只改这里：每期一个 JSON
 │   ├── lidong.json     # 立冬（语文/节气）
 │   ├── lucheng.json    # 路程·时间·速度（横版 16:9，167s）
-│   ├── sudu.json       # 路程·时间·速度（竖版 3:4，86.7s，课本 P79–P80）
+│   ├── sudu.json       # 路程·时间·速度（竖版 3:4，89.3s，课本 P79–P80）
+│   ├── dong.json       # 「冬」字演变（竖版 3:4，69.7s，汉字/节气）
 │   └── xiangyu.json    # 相遇问题（竖版 3:4，超出课本，练习用）
 ├── engine/
 │   ├── build.py        # 主流程（配音→时间轴→渲染→混音→编码）
@@ -59,6 +60,7 @@ vibe-k12/
 | `out/lucheng/lucheng.mp4` | 路程·时间·速度（四上数学） | 167.3s | `content/lucheng.json` |
 | `out/xiangyu/xiangyu.mp4` | 相遇问题（超出课本，仅作练习；竖版 3:4 · 童趣主题） | 68.9s | `content/xiangyu.json` |
 | `out/sudu/sudu.mp4` | 路程·时间·速度（人教版四上 P79–P80 · 竖版 3:4 · 童趣主题 · 含竞走演示） | 89.3s | `content/sudu.json` |
+| `out/dong/dong.mp4` | 「冬」字演变（汉字/节气 · 竖版 3:4 · 童趣主题 · 楷体→甲骨→金文→小篆） | 69.7s | `content/dong.json` |
 
 ## 跑一条片子
 
@@ -131,6 +133,7 @@ cd vibe-k12
 | `ratio` | 关系三角：路程在顶，速度×时间在下，三个变形公式 | `top` `left` `right` `formulas[]` `note` |
 | `race` | 竞走演示（竖版专用）：三条跑道 + 顶部 0–280 米距离尺 + 小人头顶实时米数 | `title` `len` `tMax` `lanes[{icon,name,t,d,color}]` `note` |
 | `meet` | 相遇演示（竖版专用）：两人相向匀速前进 + 合走进度条 + 相遇闪光 | `title` `len` `v1` `v2` `n1` `n2` `sumText` |
+| `glyph` | 字形演变（竖版专用）：朝代标签 + 白卡内大字/线稿字形 + 注释条目；线稿收在 `GLYPHS` 表 | `era` `glyph`(`kaishu`/`jiagu`/`jinwen`/`xiaozhuan`) `char` `pinyin` `tone` `notes[]` |
 | `card` | 结尾知识卡（定格收藏）：序号条目 + 脚注 | `title` `items[]` `foot` |
 | `outro` | 结尾三行 + 落款印章 | `lines[]` `tag` |
 
