@@ -41,8 +41,64 @@
       <line x1="52" y1="172" x2="248" y2="172"/>
       <line x1="116" y1="206" x2="150" y2="266"/>
       <line x1="184" y1="206" x2="150" y2="266"/>
-      <line x1="150" y1="196" x2="150" y2="226"/>`
+      <line x1="150" y1="196" x2="150" y2="226"/>`,
+
+    /* 雪 · 甲骨文：雨字头（横+穹顶+雨滴），下面两只手（乂） */
+    xuejiagu: `
+      <line x1="90" y1="34" x2="210" y2="34"/>
+      <path d="M78 96 Q78 56 150 56 Q222 56 222 96"/>
+      <line x1="150" y1="56" x2="150" y2="104"/>
+      <line x1="100" y1="112" x2="96" y2="132"/>
+      <line x1="150" y1="112" x2="150" y2="132"/>
+      <line x1="200" y1="112" x2="204" y2="132"/>
+      <line x1="86" y1="168" x2="134" y2="224"/>
+      <line x1="134" y1="168" x2="86" y2="224"/>
+      <line x1="166" y1="168" x2="214" y2="224"/>
+      <line x1="214" y1="168" x2="166" y2="224"/>`,
+    /* 雪 · 金文：上为落雪分叉，中为接雪三横（手），下为融水水波纹 */
+    xuejinwen: `
+      <line x1="105" y1="58" x2="105" y2="178"/>
+      <line x1="195" y1="58" x2="195" y2="178"/>
+      <line x1="105" y1="58" x2="88" y2="42"/>
+      <line x1="105" y1="58" x2="122" y2="42"/>
+      <line x1="195" y1="58" x2="178" y2="42"/>
+      <line x1="195" y1="58" x2="212" y2="42"/>
+      <line x1="72" y1="112" x2="228" y2="112"/>
+      <line x1="72" y1="140" x2="228" y2="140"/>
+      <line x1="72" y1="168" x2="228" y2="168"/>
+      <line x1="105" y1="178" x2="96" y2="196"/>
+      <line x1="105" y1="178" x2="114" y2="196"/>
+      <line x1="195" y1="178" x2="186" y2="196"/>
+      <line x1="195" y1="178" x2="204" y2="196"/>
+      <path d="M70 222 Q100 212 130 222 T190 222 T230 222"/>
+      <path d="M84 246 Q114 236 144 246 T204 246"/>
+      <path d="M100 268 Q130 258 160 268 T210 268"/>`,
+    /* 雪 · 小篆：雨字头 + 彗（两枝竹枝）+ 下手形三横带弯尾 */
+    xuexiaozhuan: `
+      <line x1="90" y1="34" x2="210" y2="34"/>
+      <path d="M78 92 Q78 54 150 54 Q222 54 222 92"/>
+      <line x1="104" y1="76" x2="138" y2="76"/>
+      <line x1="162" y1="76" x2="196" y2="76"/>
+      <line x1="150" y1="54" x2="150" y2="100"/>
+      <line x1="105" y1="120" x2="105" y2="176"/>
+      <line x1="105" y1="138" x2="88" y2="126"/>
+      <line x1="105" y1="138" x2="122" y2="126"/>
+      <line x1="195" y1="120" x2="195" y2="176"/>
+      <line x1="195" y1="138" x2="178" y2="126"/>
+      <line x1="195" y1="138" x2="212" y2="126"/>
+      <line x1="84" y1="206" x2="216" y2="206"/>
+      <line x1="84" y1="228" x2="216" y2="228"/>
+      <line x1="84" y1="250" x2="216" y2="250"/>
+      <path d="M216 206 Q232 228 214 250"/>`
   };
+
+  /* 六角雪花（线稿，currentColor） */
+  const flakeSvg = (r = 10) => `
+    <svg viewBox="-12 -12 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="-${r}" y1="0" x2="${r}" y2="0"/>
+      <line x1="-${(r * .5).toFixed(1)}" y1="-${(r * .866).toFixed(1)}" x2="${(r * .5).toFixed(1)}" y2="${(r * .866).toFixed(1)}"/>
+      <line x1="-${(r * .5).toFixed(1)}" y1="${(r * .866).toFixed(1)}" x2="${(r * .5).toFixed(1)}" y2="-${(r * .866).toFixed(1)}"/>
+    </svg>`;
 
   const mk = (tag, cls, html) => {
     const e = document.createElement(tag);
@@ -700,21 +756,43 @@
       };
     },
 
-    /* 15b 字形演变：朝代标签 + 大字/线稿字形 + 注释条目（竖版 1080×1440） */
+    /* 15b 字形演变：朝代标签 + 大字/线稿字形 + 注释条目（竖版 1080×1440）
+       p_.snow：背景落雪（确定性循环下落）；p_.anim='catch'：雪花落手、化水滴落下 */
     glyph(p_) {
       const notes = p_.notes || [];
       const isChar = p_.glyph === 'kaishu';
       const glyphHtml = isChar
-        ? `<div class="gl-char">${p_.char || '冬'}</div><div class="gl-py">${p_.pinyin || ''}</div>`
+        ? `<div class="gl-char">${p_.char || '雪'}</div><div class="gl-py">${p_.pinyin || ''}</div>`
         : `<svg class="gl-svg" viewBox="0 0 300 300">${GLYPHS[p_.glyph] || ''}</svg>`;
+      /* 落雪花片：参数由序号推出，update 只按 local 时间算位置（纯函数，可跳帧） */
+      const flakes = Array.from({ length: 12 }, (_, i) => ({
+        x: (i * 89) % 100, period: 3.4 + (i % 5) * .7,
+        phase: i / 12, size: 9 + (i % 3) * 5, sway: 18 + (i % 4) * 8
+      }));
+      const snowHtml = p_.snow ? `<div class="gl-snow">${flakes.map((f, i) =>
+        `<span class="gl-flake" data-i="${i}" style="width:${f.size}px;height:${f.size}px">${flakeSvg(f.size / 2)}</span>`).join('')}</div>` : '';
+      const catchHtml = p_.anim === 'catch' ? `
+        <div class="gl-anim">
+          <svg viewBox="0 0 300 300">
+            <g class="gl-cf" stroke="currentColor" fill="none" stroke-width="2.4" stroke-linecap="round">
+              <line x1="-13" y1="0" x2="13" y2="0"/>
+              <line x1="-6.5" y1="-11.3" x2="6.5" y2="11.3"/>
+              <line x1="-6.5" y1="11.3" x2="6.5" y2="-11.3"/>
+            </g>
+            <ellipse class="gl-drop" cx="150" cy="0" rx="7" ry="10"/>
+          </svg>
+        </div>` : '';
       const el = mk('div', 'glyph', `
         <div class="gl-badge">${p_.era || ''}</div>
-        <div class="gl-card">${glyphHtml}</div>
+        <div class="gl-card">${glyphHtml}${catchHtml}</div>
+        ${snowHtml}
         <div class="gl-notes">${notes.map(n =>
           `<div class="gl-note"><span class="gl-dot"></span><span>${n}</span></div>`).join('')}</div>`);
       el.style.setProperty('--gc', p_.tone || 'var(--ink)');
       const badge = el.querySelector('.gl-badge'), card = el.querySelector('.gl-card');
       const nts = [...el.querySelectorAll('.gl-note')];
+      const flakeEls = [...el.querySelectorAll('.gl-flake')];
+      const cf = el.querySelector('.gl-cf'), drop = el.querySelector('.gl-drop');
       return {
         el, update(l) {
           badge.style.opacity = eo(l, 0, .6).toFixed(3);
@@ -722,6 +800,26 @@
           card.style.opacity = cp.toFixed(3);
           card.style.transform = `translateX(-50%) scale(${(0.9 + 0.1 * cp).toFixed(3)})`;
           nts.forEach((n, i) => rise(n, eo(l, 1.0 + i * .35, .7), 24));
+          if (p_.snow) {
+            flakeEls.forEach((elx, i) => {
+              const f = flakes[i];
+              const cy = ((l / f.period + f.phase) % 1) * 1440;
+              const cx = f.x / 100 * 1080 + Math.sin(l * .9 + f.phase * 6.28) * f.sway;
+              const o = clamp01(cy / 120) * clamp01((1440 - cy) / 160);
+              elx.style.opacity = (o * .9).toFixed(3);
+              elx.style.transform = `translate(${cx.toFixed(1)}px, ${cy.toFixed(1)}px)`;
+            });
+          }
+          if (cf) {
+            /* 雪花先落到手心（180），停住；随后一滴融水落向水面 */
+            const pr1 = p(l, .3, 1.9);
+            const yf = 40 + 140 * Math.min(pr1, 1);
+            cf.setAttribute('transform', `translate(150,${yf.toFixed(1)})`);
+            const landed = l >= 2.2;
+            const pr2 = p(l, 2.2, 1.6);
+            drop.setAttribute('cy', (180 + 70 * pr2).toFixed(1));
+            drop.style.opacity = landed ? ei(l, 2.2, .5).toFixed(3) : 0;
+          }
         }
       };
     },
